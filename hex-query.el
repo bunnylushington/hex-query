@@ -43,8 +43,9 @@ Returns nil if the package is not found or an error occurs."
                :url (cdr (assoc 'url json-data))
                :latest_version (cdr (assoc 'latest_version json-data))
                :docs_html_url (cdr (assoc 'docs_html_url json-data)))))
-        (message "Error fetching package %s" package-name)
-        nil))))
+        (progn
+          (message "Error fetching package %s" package-name)
+          nil)))))
 
 (defun hex-search-package (substring)
   "Search for packages on Hex.pm that match SUBSTRING."
@@ -111,3 +112,66 @@ Returns nil if the package is not found or an error occurs."
                 (princ (format "GitHub URL: %s\n" (hex-package-github_url my-package)))
                 (princ (format "Docs HTML URL: %s\n" (hex-package-docs_html_url my-package))))
             (message "Package not found: %s" selected-package))))))
+
+(defun hex-visit-package-docs ()
+  "Visit the Hex.pm documentation for the package at point."
+  (interactive)
+  (let* ((package-name (let ((sexp (thing-at-point 'sexp)))
+                         (if (stringp sexp)
+                           (substring-no-properties sexp 1)
+                         (substring (prin1-to-string sexp) 1)))))
+    (if package-name
+        (let ((my-package (hex-query-package package-name)))
+          (if my-package
+              (browse-url (hex-package-docs_html_url my-package))
+            (message "Package not found: %s" package-name)))
+      (message "No package at point"))))
+
+(defun hex-visit-package-github ()
+  "Visit the GitHub page for the package at point."
+  (interactive)
+  (let* ((package-name (let ((sexp (thing-at-point 'sexp)))
+                       (if (stringp sexp)
+                           (substring-no-properties sexp 1)
+                         (substring (prin1-to-string sexp) 1)))))
+    (if package-name
+        (let ((my-package (hex-query-package package-name)))
+          (if my-package
+              (if (hex-package-github_url my-package)
+                  (browse-url (hex-package-github_url my-package))
+                (message "GitHub URL not found for %s" package-name))
+            (message "Package not found: %s" package-name)))
+      (message "No package at point"))))
+
+(defun hex-visit-package-hex ()
+  "Visit the Hex.pm page for the package at point."
+  (interactive)
+  (let* ((package-name (let ((sexp (thing-at-point 'sexp)))
+                       (if (stringp sexp)
+                           (substring-no-properties sexp 1)
+                         (substring (prin1-to-string sexp) 1)))))
+    (if package-name
+        (let ((my-package (hex-query-package package-name)))
+          (if my-package
+              (browse-url (hex-package-url my-package))
+            (message "Package not found: %s" package-name)))
+      (message "No package at point"))))
+
+
+;;; Example Usage:
+    ;; (let ((my-package (hex-query-package "jason")))
+    ;;   (when my-package
+    ;;     (message "Package Name: %s" (hex-package-name my-package))
+    ;;     (message "Description: %s" (hex-package-description my-package))
+    ;;     (message "All-time downloads: %s" (plist-get (hex-package-downloads my-package) :all))
+    ;;     (message "Latest version: %s" (hex-package-latest_version my-package))
+    ;;     (message "GitHub URL: %s" (hex-package-github_url my-package))
+    ;;     (message "URL: %s" (hex-package-url my-package))
+    ;;     (message "Docs HTML URL: %s" (hex-package-docs_html_url my-package))))
+
+;;; To use the new function:
+;; M-x hex-query-insert-dependency
+;; M-x hex-query-show-package-info
+;; M-x hex-visit-package-docs
+;; M-x hex-visit-package-github
+;; M-x hex-visit-package-hex
