@@ -1,3 +1,13 @@
+;;; hex-query.el --- Query Hex.pm for package information
+
+;;; Commentary:
+
+;; This file provides functions for querying the Hex.pm API for package
+;; information. It can be used to search for packages, get package
+;; details, and insert dependency snippets into a mix.exs file.
+
+;;; Code:
+
 (require 'url)
 (require 'json)
 (require 'cl-lib)
