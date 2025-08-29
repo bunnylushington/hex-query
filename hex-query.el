@@ -113,9 +113,8 @@ Returns nil if the package is not found or an error occurs."
                 (princ (format "Docs HTML URL: %s\n" (hex-package-docs_html_url my-package))))
             (message "Package not found: %s" selected-package))))))
 
-(defun hex-visit-package-docs ()
-  "Visit the Hex.pm documentation for the package at point."
-  (interactive)
+(defun hex-visit-package-url (url-fn)
+  "Helper function to visit a URL for the package at point."
   (let* ((package-name (let ((sexp (thing-at-point 'sexp)))
                          (if (stringp sexp)
                            (substring-no-properties sexp 1)
@@ -123,39 +122,27 @@ Returns nil if the package is not found or an error occurs."
     (if package-name
         (let ((my-package (hex-query-package package-name)))
           (if my-package
-              (browse-url (hex-package-docs_html_url my-package))
+              (let ((url (funcall url-fn my-package)))
+                (if url
+                    (browse-url url)
+                  (message "URL not found for %s" package-name)))
             (message "Package not found: %s" package-name)))
       (message "No package at point"))))
+
+(defun hex-visit-package-docs ()
+  "Visit the Hex.pm documentation for the package at point."
+  (interactive)
+  (hex-visit-package-url 'hex-package-docs_html_url))
 
 (defun hex-visit-package-github ()
   "Visit the GitHub page for the package at point."
   (interactive)
-  (let* ((package-name (let ((sexp (thing-at-point 'sexp)))
-                       (if (stringp sexp)
-                           (substring-no-properties sexp 1)
-                         (substring (prin1-to-string sexp) 1)))))
-    (if package-name
-        (let ((my-package (hex-query-package package-name)))
-          (if my-package
-              (if (hex-package-github_url my-package)
-                  (browse-url (hex-package-github_url my-package))
-                (message "GitHub URL not found for %s" package-name))
-            (message "Package not found: %s" package-name)))
-      (message "No package at point"))))
+  (hex-visit-package-url 'hex-package-github_url))
 
 (defun hex-visit-package-hex ()
   "Visit the Hex.pm page for the package at point."
   (interactive)
-  (let* ((package-name (let ((sexp (thing-at-point 'sexp)))
-                       (if (stringp sexp)
-                           (substring-no-properties sexp 1)
-                         (substring (prin1-to-string sexp) 1)))))
-    (if package-name
-        (let ((my-package (hex-query-package package-name)))
-          (if my-package
-              (browse-url (hex-package-url my-package))
-            (message "Package not found: %s" package-name)))
-      (message "No package at point"))))
+  (hex-visit-package-url 'hex-package-url))
 
 
 ;;; Example Usage:
