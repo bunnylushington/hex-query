@@ -78,11 +78,11 @@ Returns nil if the package is not found or an error occurs."
           (if my-package
               (let* ((latest-version (hex-package-latest_version my-package))
                      (only-dev-test (y-or-n-p "Only for :dev and :test? "))
-                     (version-parts (split-string latest-version "."))
+                     (version-parts (split-string latest-version "\\."))
                      (truncated-version (if (> (length version-parts) 2)
                                             (mapconcat #'identity (seq-take version-parts 2) ".")
                                           latest-version)))
-                (insert (format "{: %s, \"~> %s\"%s}" selected-package truncated-version
+                (insert (format "{:%s, \"~> %s\"%s}" selected-package truncated-version
                                 (if only-dev-test ", only: [:dev, :test], runtime: false" ""))))
             (message "Package not found: %s" selected-package))))))
 
